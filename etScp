@@ -1,0 +1,12 @@
+basePath=$(cd `dirname $0`;pwd)
+
+. $basePath/etConf.sh
+
+file="$1"
+ip="$2"
+
+/usr/bin/expect -c "set timeout -1
+        spawn  scp -P 45222 -i ${key}  -o StrictHostKeyChecking=no -r ${file} ${user}@${ip}:~
+        expect \"Enter passphrase for key\" {send \"${passphrase}\n\"}
+        expect eof
+"

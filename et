@@ -1,0 +1,13 @@
+basePath=$(cd `dirname $0`;pwd)
+. $basePath/etConf.sh
+
+ip="$1"
+cmd="$2"
+
+/usr/bin/expect -c "set timeout 5
+        spawn  ssh -p 45222 -i ${key}  ${user}@"$ip" -o StrictHostKeyChecking=no
+        expect \"Enter passphrase for key\" {send \"${passphrase}\n\"}
+        expect \"${user}@debian\" {send \"${cmd}\n\"}
+        interact
+	expect eof
+"

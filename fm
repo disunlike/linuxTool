@@ -1,0 +1,139 @@
+#!/bin/bash
+#main(属性,参数){}
+#读取指定的行号
+function output(){
+	#echo "$1"p
+	cat -n /usr/local/bin/storage.xml | sed -n "$1"p
+}
+#根据参数选择要读取的行号-优化选项：多个允许多个参数
+function query(){
+	num=`cat /usr/local/bin/storage.xml | grep $1 | wc -l`
+	case $num in
+	o )
+	#??BUG,输出不了
+		echo "库中没有符合条件的结果,使用 filemanager -l 查看库"
+	;;
+	1)
+	#??这里需要切换到交互模式，询问用户是否打开文件
+		vim `cat /usr/local/bin/storage.xml | grep $1`
+	;;
+	*)
+		for LINE in `cat /usr/local/bin/storage.xml | grep $1`
+		do
+			echo $LINE
+		done
+		;;
+	esac
+	#xargs touch
+}
+#先判断文件是否存在，若存在则写入。不存在要给用户确认之后才写入
+function add(){
+	#如何判断写入是否成功？
+	if [ -f $1 ];then
+	#这个相对路径是用户所在目录的相对路径还是脚本所在的路径
+		echo $1 >>/usr/local/bin/storage.xml
+	else
+		echo "你输入的文件路径有问题，是否继续添加（y/n）"
+	fi
+}
+
+function lookup(){
+	for LINE in `cat /usr/local/bin/storage.xml`
+	do
+		echo $LINE
+	done
+}
+
+function gofile(){
+	path=`cat /usr/local/bin/storage.xml | grep $1`
+	num=`cat /usr/local/bin/storage.xml | grep $1 | wc -l`
+	case $num in
+		o )
+		#BUG
+			echo "??"
+		;;
+		1)
+		#设法给出提醒,当用户没有使用“.”直接在脚本中切换的时候 `pwd`
+			cd ${path%/*}
+		;;
+		*)
+			echo ${path%/*}
+		;;
+		esac
+}
+
+function getpath(){
+	for LINE in `cat /usr/local/bin/storage.xml | grep $1`
+	do
+		echo $LINE
+	done
+}
+
+
+function copyfile(){
+	#为文件准备一个新的名称
+	#追加功能：根据添加者的用户名来为文件加上前缀“用户名_”
+	filename=my${1##*/}
+	#将文件拷贝到一个目录下
+	if [-d /usr/local/bin/comment ];then
+	if [-f /usr/local/bin/comment/${filename}];then
+	echo "This is nonthing to do"
+	else
+		cp $1 /usr/local/bin/comment/${filename}
+		sed -i '1i\#这是一个备份文件'/usr/local/bin/comment/${filename}
+	fi
+	else
+		mkdir -p /usr/local/bin/comment
+		sed -i '1i\Insert this line' file.txt
+		cp $1 /usr/local/bin/comment/${filename}
+		sed -i '1i\#这是一个备份文件'/usr/local/bin/comment/${filename}
+	fi
+		gedit /usr/local/bin/comment/${filename}&
+}
+
+#库存文件优化函数，为库函数去除重复以及无效的行
+function up(){
+#去除不以根开头的行->检查文件是否存在
+#类似删除文件，区别在于判断删除的条件不同
+	goal=`cat /usr/local/bin/storage.xml|grep '^[^/]'`
+	echo $goal
+#去除重复的目录（类似冒泡排序）
+}
+
+#获得属性,选择需要调用方法q
+function main(){
+	if [ -z $1 ];then
+		echo "-a -g -s -l"
+	else
+	case $1 in
+		-a )
+			add $2
+		;;
+		-g )
+			gofile $2
+		;;
+		-p )
+			getpath $2
+		;;
+		-c )
+			copyfile $2
+		;;
+		-s )
+			vim /usr/local/bin/storage.xml
+		;;
+		-l )
+			lookup
+		;;
+		-u )
+			up
+		;;
+		*)
+			query $1
+		;;
+		esac
+	fi
+}
+
+main $1 $2 $3 $4 $5 $6 $7 $8 $9
+
+
